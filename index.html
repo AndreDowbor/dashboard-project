@@ -15,7 +15,7 @@
     <div class="flex space-x-2">
       <input type="date" class="border rounded px-2 py-1 text-sm">
       <input type="date" class="border rounded px-2 py-1 text-sm">
-      <input type="text" placeholder="Search..." class="border rounded px-2 py-1">
+      <input type="text" id="search-member" placeholder="🔍 Search Member ID" class="border rounded px-2 py-1 text-sm">
     </div>
   </header>
 
@@ -105,13 +105,15 @@
 
   <!-- Script -->
   <script>
+    let allData = [];
+
     async function loadData() {
       const res = await fetch("https://raw.githubusercontent.com/AndreDowbor/dashboard-project/main/data.json");
-      const data = await res.json();
-      renderTable(data);
-      updateSummary(data);
-      renderCharts(data);
-      populateActionFilter(data);
+      allData = await res.json();
+      renderTable(allData);
+      updateSummary(allData);
+      renderCharts(allData);
+      populateActionFilter(allData);
     }
 
     function renderTable(data) {
@@ -138,7 +140,7 @@
             <td class="p-2">${row.match_result ? "✅ Match" : "❌ No Match"}</td>
 
             <!-- Notes -->
-            <td class="p-2 truncate max-w-xs ${row.Notes ? 'cursor-pointer text-red-600 underline' : ''}"
+            <td class="p-2 truncate max-w-xs ${row.Notes ? 'cursor-pointer underline' : ''}"
                 data-text="${safeNotes}" onclick="handleCellClick(this)">
               ${row.Notes ? row.Notes.substring(0,40) + (row.Notes.length > 40 ? "..." : "") : ""}
             </td>
@@ -288,6 +290,13 @@
       document.getElementById("modal").classList.add("hidden");
       document.getElementById("modal").classList.remove("flex");
     }
+
+    // 🔍 Member ID search
+    document.getElementById("search-member").addEventListener("input", e => {
+      const term = e.target.value.trim();
+      const filtered = term ? allData.filter(r => r.member_id.includes(term)) : allData;
+      renderTable(filtered);
+    });
 
     loadData();
   </script>
