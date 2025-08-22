@@ -821,8 +821,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Maybe set a trigger to membership purchases...member type change",
+    "match_result": false
   },
   {
     "member_id": "162493",
@@ -881,8 +881,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Student_PrgYear: 5 -> 2 It seems more info update or correction",
+    "match_result": false
   },
   {
     "member_id": "128659",
@@ -911,8 +911,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Dalhousie Research in Medicine Award. > He seems to have become a doc long time ago. It also doesn't match the trigger",
+    "match_result": false
   },
   {
     "member_id": "162130",
@@ -1031,8 +1031,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Business Manager in Life Sciences Sales >  As a cardiovascular professional, it doesn`t match",
+    "match_result": false
   },
   {
     "member_id": "162460",
@@ -1046,8 +1046,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Need to make an adjustment on the purchase trigger when multiple profile changes are happening on the same day",
+    "match_result": false
   },
   {
     "member_id": "162464",
@@ -1121,8 +1121,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Ivestigate why blank to > smth",
+    "match_result": false
   },
   {
     "member_id": "132429",
@@ -1241,8 +1241,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Many Blank to > on the timeline. update info",
+    "match_result": false
   },
   {
     "member_id": "162452",
@@ -1256,8 +1256,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Blank -> COMMUNITY > Not really sure if matches",
+    "match_result": false
   },
   {
     "member_id": "162466",
@@ -1301,8 +1301,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "She had her title updated. not really changed company name or smth",
+    "match_result": false
   },
   {
     "member_id": "154001",
@@ -1331,8 +1331,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "the member's LOCATION_WORK changed to 'COMMUNITY', indicating a potential interest in community engagement. Doesn`t sound right to me",
+    "match_result": false
   },
   {
     "member_id": "128824",
@@ -1376,8 +1376,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "changed from a blank value to 'Click Pharmacies PTY LTD' on 2025-08-04. What if it is info update?",
+    "match_result": false
   },
   {
     "member_id": "135978",
@@ -1421,8 +1421,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "160748",
@@ -1451,8 +1451,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "129526",
@@ -1466,8 +1466,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "161527",
@@ -1481,8 +1481,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "135423",
@@ -1511,8 +1511,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "145434",
@@ -1541,8 +1541,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "145434",
@@ -1571,8 +1571,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "162414",
@@ -1616,8 +1616,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "152051",
@@ -1661,8 +1661,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "the info on the timeline doesn`t match",
+    "match_result": false
   },
   {
     "member_id": "137343",
@@ -1721,8 +1721,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "The trigger says made a purchase shouldnt be renewal?",
+    "match_result": false
   },
   {
     "member_id": "152051",
@@ -1766,8 +1766,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "His Status is Inactive",
+    "match_result": false
   },
   {
     "member_id": "161522",
@@ -1796,8 +1796,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "162356",
@@ -1811,8 +1811,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "162372",
@@ -1826,8 +1826,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "136221",
@@ -1841,8 +1841,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "139265",
@@ -1871,8 +1871,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Missinterpretation of Membership Plan change",
+    "match_result": false
   },
   {
     "member_id": "158170",
@@ -1916,8 +1916,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "158345",
@@ -1931,8 +1931,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "He joined on July 3, 2024 / New member?",
+    "match_result": false
   },
   {
     "member_id": "161958",
@@ -1976,8 +1976,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "162356",
@@ -1991,8 +1991,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "162364",
@@ -2081,8 +2081,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Change of status on a short period of time > Adjust to ignore Flippings",
+    "match_result": false
   },
   {
     "member_id": "127440",
@@ -2126,8 +2126,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Change of status on a short period of time > Adjust to ignore Flippings",
+    "match_result": false
   },
   {
     "member_id": "136221",
@@ -2141,8 +2141,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Duplicate",
+    "match_result": false
   },
   {
     "member_id": "127206",
@@ -2291,8 +2291,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "The info was updated does it mean new join?",
+    "match_result": false
   },
   {
     "member_id": "127616",
@@ -2321,8 +2321,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Message Removed",
+    "match_result": false
   },
   {
     "member_id": "161487",
@@ -2351,8 +2351,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Message Removed",
+    "match_result": false
   },
   {
     "member_id": "162122",
@@ -2366,8 +2366,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Member status: Not currently a member.",
+    "match_result": false
   },
   {
     "member_id": "139336",
@@ -2426,8 +2426,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Message Removed",
+    "match_result": false
   },
   {
     "member_id": "162108",
@@ -2441,8 +2441,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Not a member currently > new join?",
+    "match_result": false
   },
   {
     "member_id": "162116",
@@ -2456,8 +2456,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Message Removed",
+    "match_result": false
   },
   {
     "member_id": "134991",
@@ -2471,8 +2471,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Change of status on a short period of time > Adjust to ignore Flippings",
+    "match_result": false
   },
   {
     "member_id": "135468",
@@ -2486,8 +2486,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "It should have been marked as a reinstatement",
+    "match_result": false
   },
   {
     "member_id": "152595",
@@ -2546,8 +2546,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "CCN is not a member type",
+    "match_result": false
   },
   {
     "member_id": "151141",
@@ -2561,8 +2561,8 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Message Removed",
+    "match_result": false
   },
   {
     "member_id": "162119",
@@ -2576,7 +2576,7 @@
     "trigger_adjust_needed": false,
     "made_by_staff": false,
     "staff_name_id": "",
-    "notes": "",
-    "match_result": true
+    "notes": "Changed prefix and not type.",
+    "match_result": false
   }
 ]
