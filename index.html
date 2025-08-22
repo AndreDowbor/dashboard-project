@@ -98,7 +98,7 @@
   <!-- Script to load data -->
   <script>
     async function loadData() {
-      const res = await fetch("data.json");
+      const res = await fetch("https://raw.githubusercontent.com/AndreDowbor/dashboard-project/main/data.json");
       const data = await res.json();
       renderTable(data);
       updateSummary(data);
