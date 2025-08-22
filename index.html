@@ -98,7 +98,6 @@
     async function loadData() {
       const res = await fetch("https://raw.githubusercontent.com/AndreDowbor/dashboard-project/main/data.json");
       const data = await res.json();
-      console.log("Loaded notes:", data.map(r => r.notes)); // Debug
       renderTable(data);
       updateSummary(data);
       renderCharts(data);
@@ -110,22 +109,15 @@
       tbody.innerHTML = "";
 
       data.forEach(row => {
-        // Escape quotes safely
-        const safeReason = (row.action_reason || "")
-          .replace(/'/g, "&#39;")
-          .replace(/"/g, "&quot;");
-        const safeNotes = (row.notes || "")
-          .replace(/'/g, "&#39;")
-          .replace(/"/g, "&quot;");
-
         tbody.innerHTML += `
           <tr class="border-t ${row.match_result ? '' : 'bg-red-50'}">
             <td class="p-2">#${row.member_id}</td>
             <td class="p-2">${row.first_name} ${row.last_name}</td>
 
             <!-- Action Reason -->
-            <td class="p-2 truncate max-w-xs ${row.action_reason && row.action_reason.trim() ? 'cursor-pointer text-blue-600 underline' : ''}" 
-                onclick="${row.action_reason && row.action_reason.trim() ? `openModal('${safeReason}')` : ''}">
+            <td class="p-2 truncate max-w-xs ${row.action_reason && row.action_reason.trim() ? 'cursor-pointer text-blue-600 underline' : ''}"
+                data-text="${row.action_reason || ''}"
+                onclick="handleCellClick(this)">
               ${row.action_reason && row.action_reason.trim()
                 ? row.action_reason.substring(0,50) + (row.action_reason.length > 50 ? "..." : "")
                 : ""}
@@ -136,8 +128,9 @@
             <td class="p-2">${row.match_result ? "✅ Match" : "❌ No Match"}</td>
 
             <!-- Notes -->
-            <td class="p-2 truncate max-w-xs ${row.notes && row.notes.trim() ? 'cursor-pointer text-red-600 underline' : ''}" 
-                onclick="${row.notes && row.notes.trim() ? `openModal('${safeNotes}')` : ''}">
+            <td class="p-2 truncate max-w-xs ${row.notes && row.notes.trim() ? 'cursor-pointer text-red-600 underline' : ''}"
+                data-text="${row.notes || ''}"
+                onclick="handleCellClick(this)">
               ${row.notes && row.notes.trim()
                 ? row.notes.substring(0,40) + (row.notes.length > 40 ? "..." : "")
                 : ""}
@@ -145,6 +138,13 @@
           </tr>
         `;
       });
+    }
+
+    function handleCellClick(cell) {
+      const text = cell.dataset.text || "";
+      if (text.trim()) {
+        openModal(text);
+      }
     }
 
     function updateSummary(data) {
