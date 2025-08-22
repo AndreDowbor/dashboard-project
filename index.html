@@ -10,7 +10,10 @@
 
   <!-- Header -->
   <header class="bg-white shadow p-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold">📊 AI Message QA Dashboard</h1>
+    <div class="flex items-center space-x-2">
+      <img src="datascout_logo.png" alt="DataScout Logo" class="h-8 w-8">
+      <h1 class="text-xl font-bold">📊 AI Message QA Dashboard</h1>
+    </div>
     <div class="flex space-x-2">
       <input type="text" id="search-member" placeholder="🔍 Search Member ID" class="border rounded px-2 py-1 text-sm">
     </div>
@@ -147,7 +150,7 @@
       document.getElementById("modal").classList.remove("flex");
     }
 
-    // Sorting logic
+    // Sorting
     function sortTable(column) {
       currentSort.asc = currentSort.column === column ? !currentSort.asc : true;
       currentSort.column = column;
@@ -181,14 +184,11 @@
       renderTable(sorted);
     }
 
-    // 🔍 Member ID search
-    document.getElementById("search-member").addEventListener("keypress", e => {
-      if (e.key === "Enter") {
-        const term = e.target.value.trim();
-        const filtered = term ? allData.filter(r => r.member_id.includes(term)) : allData;
-        renderTable(filtered);
-        e.target.blur(); // removes cursor blinking after Enter
-      }
+    // 🔍 Live Member ID search
+    document.getElementById("search-member").addEventListener("input", e => {
+      const term = e.target.value.trim();
+      const filtered = term ? allData.filter(r => r.member_id.includes(term)) : allData;
+      renderTable(filtered);
     });
 
     loadData();
