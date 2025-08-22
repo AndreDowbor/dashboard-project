@@ -15,7 +15,7 @@
     <div class="flex space-x-2">
       <input type="date" class="border rounded px-2 py-1 text-sm">
       <input type="date" class="border rounded px-2 py-1 text-sm">
-      <input type="text" placeholder="Search..." class="border rounded px-2 py-1 text-sm">
+      <input type="text" placeholder="Search..." id="search" class="border rounded px-2 py-1 text-sm">
     </div>
   </header>
 
@@ -36,8 +36,8 @@
     <!-- Main -->
     <main class="flex-1 p-6 space-y-6">
 
-      <!-- Summary Cards -->
-      <div class="grid grid-cols-4 gap-4">
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-6 gap-4">
         <div class="bg-white p-4 rounded-xl shadow">
           <p class="text-sm text-gray-500">Total Messages</p>
           <p id="total-messages" class="text-2xl font-bold">0</p>
@@ -54,13 +54,22 @@
           <p class="text-sm text-gray-500">🎯 Accuracy</p>
           <p id="accuracy" class="text-2xl font-bold">0%</p>
         </div>
+        <div class="bg-white p-4 rounded-xl shadow">
+          <p class="text-sm text-gray-500">⚡ New Triggers Needed</p>
+          <p id="new-triggers" class="text-2xl font-bold text-yellow-600">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl shadow">
+          <p class="text-sm text-gray-500">✏️ Adjustments Needed</p>
+          <p id="adjust-triggers" class="text-2xl font-bold text-blue-600">0</p>
+        </div>
       </div>
 
       <!-- Charts -->
-      <div class="grid grid-cols-3 gap-4">
-        <div class="bg-white p-4 rounded-xl shadow"><canvas id="pieChart"></canvas></div>
-        <div class="bg-white p-4 rounded-xl shadow"><canvas id="barChart"></canvas></div>
+      <div class="grid grid-cols-2 gap-6">
         <div class="bg-white p-4 rounded-xl shadow"><canvas id="lineChart"></canvas></div>
+        <div class="bg-white p-4 rounded-xl shadow"><canvas id="stackedBarChart"></canvas></div>
+        <div class="bg-white p-4 rounded-xl shadow"><canvas id="errorReasonsChart"></canvas></div>
+        <div class="bg-white p-4 rounded-xl shadow"><canvas id="triggerNeedsChart"></canvas></div>
       </div>
 
       <!-- Data Table -->
@@ -86,7 +95,7 @@
 
   <!-- Modal -->
   <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-    <div class="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+    <div class="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full">
       <h2 class="text-lg font-bold mb-2">Details</h2>
       <p id="modal-text" class="whitespace-pre-wrap"></p>
       <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Close</button>
@@ -109,47 +118,27 @@
       tbody.innerHTML = "";
 
       data.forEach(row => {
-        // Encode text safely for HTML attributes
         const safeReason = row.action_reason ? encodeURIComponent(row.action_reason) : "";
-        const safeNotes  = row.notes ? encodeURIComponent(row.notes) : "";
+        const safeNotes  = row.Notes ? encodeURIComponent(row.Notes) : "";
 
         tbody.innerHTML += `
           <tr class="border-t ${row.match_result ? '' : 'bg-red-50'}">
             <td class="p-2">#${row.member_id}</td>
             <td class="p-2">${row.first_name} ${row.last_name}</td>
-
-            <!-- Action Reason -->
-            <td class="p-2 truncate max-w-xs ${row.action_reason && row.action_reason.trim() ? 'cursor-pointer text-blue-600 underline' : ''}"
-                data-text="${safeReason}"
-                onclick="handleCellClick(this)">
-              ${row.action_reason && row.action_reason.trim()
-                ? row.action_reason.substring(0,50) + (row.action_reason.length > 50 ? "..." : "")
-                : ""}
+            <td class="p-2 truncate max-w-xs ${row.action_reason ? 'cursor-pointer text-blue-600 underline' : ''}"
+                data-text="${safeReason}" onclick="handleCellClick(this)">
+              ${row.action_reason ? row.action_reason.substring(0,50) + (row.action_reason.length > 50 ? "..." : "") : ""}
             </td>
-
             <td class="p-2">${row.action_code}</td>
             <td class="p-2">${row.created_at}</td>
             <td class="p-2">${row.match_result ? "✅ Match" : "❌ No Match"}</td>
-
-            <!-- Notes -->
-            <td class="p-2 truncate max-w-xs ${row.notes && row.notes.trim() ? 'cursor-pointer text-red-600 underline' : ''}"
-                data-text="${safeNotes}"
-                onclick="handleCellClick(this)">
-              ${row.notes && row.notes.trim()
-                ? row.notes.substring(0,40) + (row.notes.length > 40 ? "..." : "")
-                : ""}
+            <td class="p-2 truncate max-w-xs ${row.Notes ? 'cursor-pointer text-red-600 underline' : ''}"
+                data-text="${safeNotes}" onclick="handleCellClick(this)">
+              ${row.Notes ? row.Notes.substring(0,40) + (row.Notes.length > 40 ? "..." : "") : ""}
             </td>
           </tr>
         `;
       });
-    }
-
-    function handleCellClick(cell) {
-      const encoded = cell.dataset.text || "";
-      if (encoded.trim()) {
-        const decoded = decodeURIComponent(encoded);
-        openModal(decoded);
-      }
     }
 
     function updateSummary(data) {
@@ -157,54 +146,27 @@
       const matches = data.filter(r => r.match_result).length;
       const noMatches = total - matches;
       const accuracy = total > 0 ? Math.round((matches / total) * 100) : 0;
+      const newTriggers = data.filter(r => r.new_trigger_needed).length;
+      const adjustTriggers = data.filter(r => r.trigger_adjust_needed).length;
 
       document.getElementById("total-messages").innerText = total;
       document.getElementById("matches").innerText = matches;
       document.getElementById("no-matches").innerText = noMatches;
       document.getElementById("accuracy").innerText = accuracy + "%";
+      document.getElementById("new-triggers").innerText = newTriggers;
+      document.getElementById("adjust-triggers").innerText = adjustTriggers;
     }
 
     function renderCharts(data) {
-      const matches = data.filter(r => r.match_result).length;
-      const noMatches = data.length - matches;
+      const ctxLine = document.getElementById("lineChart").getContext("2d");
+      const ctxStacked = document.getElementById("stackedBarChart").getContext("2d");
+      const ctxError = document.getElementById("errorReasonsChart").getContext("2d");
+      const ctxTrigger = document.getElementById("triggerNeedsChart").getContext("2d");
 
-      // Pie Chart
-      new Chart(document.getElementById("pieChart"), {
-        type: 'pie',
-        data: {
-          labels: ["Matches", "No Matches"],
-          datasets: [{
-            data: [matches, noMatches],
-            backgroundColor: ["#34d399", "#f87171"]
-          }]
-        }
-      });
-
-      // Bar Chart by action_code
-      const codes = [...new Set(data.map(r => r.action_code))];
-      const accuracyPerCode = codes.map(code => {
-        const subset = data.filter(r => r.action_code === code);
-        const matchCount = subset.filter(r => r.match_result).length;
-        return subset.length > 0 ? Math.round((matchCount / subset.length) * 100) : 0;
-      });
-
-      new Chart(document.getElementById("barChart"), {
-        type: 'bar',
-        data: {
-          labels: codes,
-          datasets: [{
-            label: 'Accuracy %',
-            data: accuracyPerCode,
-            backgroundColor: "#60a5fa"
-          }]
-        },
-        options: { scales: { y: { beginAtZero: true, max: 100 } } }
-      });
-
-      // Line Chart accuracy over time
+      // Accuracy Trend
       const byDate = {};
       data.forEach(r => {
-        const date = r.created_at.split("T")[0]; // YYYY-MM-DD
+        const date = r.created_at.split("T")[0];
         if (!byDate[date]) byDate[date] = { total: 0, matches: 0 };
         byDate[date].total++;
         if (r.match_result) byDate[date].matches++;
@@ -212,18 +174,60 @@
       const dates = Object.keys(byDate).sort();
       const accuracyTrend = dates.map(d => Math.round((byDate[d].matches / byDate[d].total) * 100));
 
-      new Chart(document.getElementById("lineChart"), {
+      new Chart(ctxLine, {
         type: 'line',
-        data: {
-          labels: dates,
-          datasets: [{
-            label: 'Accuracy %',
-            data: accuracyTrend,
-            borderColor: "#10b981",
-            fill: false
-          }]
-        },
+        data: { labels: dates, datasets: [{ label: 'Accuracy %', data: accuracyTrend, borderColor: "#10b981", fill: false }] },
         options: { responsive: true }
+      });
+
+      // Action Code Performance (Stacked Bar)
+      const codes = [...new Set(data.map(r => r.action_code))];
+      const matchCounts = codes.map(code => data.filter(r => r.action_code === code && r.match_result).length);
+      const noMatchCounts = codes.map(code => data.filter(r => r.action_code === code && !r.match_result).length);
+
+      new Chart(ctxStacked, {
+        type: 'bar',
+        data: {
+          labels: codes,
+          datasets: [
+            { label: 'Matches', data: matchCounts, backgroundColor: "#34d399" },
+            { label: 'No Matches', data: noMatchCounts, backgroundColor: "#f87171" }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+        }
+      });
+
+      // Top Error Reasons
+      const reasons = {};
+      data.filter(r => r.Notes).forEach(r => {
+        const reason = r.Notes.trim();
+        reasons[reason] = (reasons[reason] || 0) + 1;
+      });
+      const topReasons = Object.entries(reasons).sort((a,b) => b[1]-a[1]).slice(0,5);
+
+      new Chart(ctxError, {
+        type: 'bar',
+        data: {
+          labels: topReasons.map(r => r[0]),
+          datasets: [{ label: 'Count', data: topReasons.map(r => r[1]), backgroundColor: "#60a5fa" }]
+        },
+        options: { indexAxis: 'y' }
+      });
+
+      // Trigger Needs (Pie)
+      const newTriggers = data.filter(r => r.new_trigger_needed).length;
+      const adjustTriggers = data.filter(r => r.trigger_adjust_needed).length;
+      const okTriggers = data.length - newTriggers - adjustTriggers;
+
+      new Chart(ctxTrigger, {
+        type: 'pie',
+        data: {
+          labels: ["New Trigger Needed", "Trigger Adjust Needed", "OK"],
+          datasets: [{ data: [newTriggers, adjustTriggers, okTriggers], backgroundColor: ["#facc15", "#3b82f6", "#34d399"] }]
+        }
       });
     }
 
@@ -236,6 +240,14 @@
         opt.textContent = code;
         select.appendChild(opt);
       });
+    }
+
+    function handleCellClick(cell) {
+      const encoded = cell.dataset.text || "";
+      if (encoded.trim()) {
+        const decoded = decodeURIComponent(encoded);
+        openModal(decoded);
+      }
     }
 
     function openModal(text) {
