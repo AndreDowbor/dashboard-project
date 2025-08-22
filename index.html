@@ -58,15 +58,9 @@
 
       <!-- Charts -->
       <div class="grid grid-cols-3 gap-4">
-        <div class="bg-white p-4 rounded-xl shadow">
-          <canvas id="pieChart"></canvas>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <canvas id="barChart"></canvas>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <canvas id="lineChart"></canvas>
-        </div>
+        <div class="bg-white p-4 rounded-xl shadow"><canvas id="pieChart"></canvas></div>
+        <div class="bg-white p-4 rounded-xl shadow"><canvas id="barChart"></canvas></div>
+        <div class="bg-white p-4 rounded-xl shadow"><canvas id="lineChart"></canvas></div>
       </div>
 
       <!-- Data Table -->
@@ -90,6 +84,15 @@
     </main>
   </div>
 
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full">
+      <h2 class="text-lg font-bold mb-2">Details</h2>
+      <p id="modal-text" class="whitespace-pre-wrap"></p>
+      <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Close</button>
+    </div>
+  </div>
+
   <!-- Script -->
   <script>
     async function loadData() {
@@ -109,11 +112,16 @@
           <tr class="border-t ${row.match_result ? '' : 'bg-red-50'}">
             <td class="p-2">#${row.member_id}</td>
             <td class="p-2">${row.first_name} ${row.last_name}</td>
-            <td class="p-2">${row.action_reason}</td>
+            <td class="p-2 truncate max-w-xs cursor-pointer text-blue-600 underline" onclick="openModal(\`${row.action_reason.replace(/`/g,"'")}\`)">
+              ${row.action_reason.substring(0,50)}${row.action_reason.length > 50 ? "..." : ""}
+            </td>
             <td class="p-2">${row.action_code}</td>
             <td class="p-2">${row.created_at}</td>
             <td class="p-2">${row.match_result ? "✅ Match" : "❌ No Match"}</td>
-            <td class="p-2">${row.notes}</td>
+            <td class="p-2 truncate max-w-xs cursor-pointer ${row.notes ? 'text-red-600 underline' : ''}" 
+                onclick="row.notes && openModal(\`${row.notes.replace(/`/g,"'")}\`)">
+              ${row.notes ? row.notes.substring(0,40) + (row.notes.length > 40 ? "..." : "") : ""}
+            </td>
           </tr>
         `;
       });
@@ -207,6 +215,17 @@
         opt.textContent = code;
         select.appendChild(opt);
       });
+    }
+
+    function openModal(text) {
+      document.getElementById("modal-text").innerText = text;
+      document.getElementById("modal").classList.remove("hidden");
+      document.getElementById("modal").classList.add("flex");
+    }
+
+    function closeModal() {
+      document.getElementById("modal").classList.add("hidden");
+      document.getElementById("modal").classList.remove("flex");
     }
 
     loadData();
