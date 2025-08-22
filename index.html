@@ -109,6 +109,10 @@
       tbody.innerHTML = "";
 
       data.forEach(row => {
+        // Encode text safely for HTML attributes
+        const safeReason = row.action_reason ? encodeURIComponent(row.action_reason) : "";
+        const safeNotes  = row.notes ? encodeURIComponent(row.notes) : "";
+
         tbody.innerHTML += `
           <tr class="border-t ${row.match_result ? '' : 'bg-red-50'}">
             <td class="p-2">#${row.member_id}</td>
@@ -116,7 +120,7 @@
 
             <!-- Action Reason -->
             <td class="p-2 truncate max-w-xs ${row.action_reason && row.action_reason.trim() ? 'cursor-pointer text-blue-600 underline' : ''}"
-                data-text="${row.action_reason || ''}"
+                data-text="${safeReason}"
                 onclick="handleCellClick(this)">
               ${row.action_reason && row.action_reason.trim()
                 ? row.action_reason.substring(0,50) + (row.action_reason.length > 50 ? "..." : "")
@@ -129,7 +133,7 @@
 
             <!-- Notes -->
             <td class="p-2 truncate max-w-xs ${row.notes && row.notes.trim() ? 'cursor-pointer text-red-600 underline' : ''}"
-                data-text="${row.notes || ''}"
+                data-text="${safeNotes}"
                 onclick="handleCellClick(this)">
               ${row.notes && row.notes.trim()
                 ? row.notes.substring(0,40) + (row.notes.length > 40 ? "..." : "")
@@ -141,9 +145,10 @@
     }
 
     function handleCellClick(cell) {
-      const text = cell.dataset.text || "";
-      if (text.trim()) {
-        openModal(text);
+      const encoded = cell.dataset.text || "";
+      if (encoded.trim()) {
+        const decoded = decodeURIComponent(encoded);
+        openModal(decoded);
       }
     }
 
