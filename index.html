@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI QA Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
@@ -13,8 +12,6 @@
   <header class="bg-white shadow p-4 flex justify-between items-center">
     <h1 class="text-xl font-bold">📊 AI Message QA Dashboard</h1>
     <div class="flex space-x-2">
-      <input type="date" class="border rounded px-2 py-1 text-sm">
-      <input type="date" class="border rounded px-2 py-1 text-sm">
       <input type="text" id="search-member" placeholder="🔍 Search Member ID" class="border rounded px-2 py-1 text-sm">
     </div>
   </header>
@@ -36,55 +33,18 @@
     <!-- Main -->
     <main class="flex-1 p-6 space-y-6">
 
-      <!-- KPI Cards -->
-      <div class="grid grid-cols-6 gap-4">
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">Total Messages</p>
-          <p id="total-messages" class="text-2xl font-bold">0</p>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">✅ Matches</p>
-          <p id="matches" class="text-2xl font-bold text-green-600">0</p>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">❌ No Matches</p>
-          <p id="no-matches" class="text-2xl font-bold text-red-600">0</p>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">🎯 Accuracy</p>
-          <p id="accuracy" class="text-2xl font-bold">0%</p>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">⚡ New Triggers Needed</p>
-          <p id="new-triggers" class="text-2xl font-bold text-yellow-600">0</p>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">✏️ Adjustments Needed</p>
-          <p id="adjust-triggers" class="text-2xl font-bold text-indigo-600">0</p>
-        </div>
-      </div>
-
-      <!-- Charts -->
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-white p-4 rounded-xl shadow"><canvas id="pieChart"></canvas></div>
-        <div class="bg-white p-4 rounded-xl shadow"><canvas id="lineChart"></canvas></div>
-        <div class="bg-white p-4 rounded-xl shadow col-span-2"><canvas id="barChart"></canvas></div>
-        <div class="bg-white p-4 rounded-xl shadow col-span-2"><canvas id="errorChart"></canvas></div>
-        <div class="bg-white p-4 rounded-xl shadow col-span-2"><canvas id="triggerNeedsChart"></canvas></div>
-      </div>
-
-      <!-- Data Table -->
+      <!-- Table -->
       <div class="bg-white rounded-xl shadow overflow-hidden">
         <table class="min-w-full text-sm text-left">
-          <thead class="bg-gray-100">
+          <thead class="bg-gray-100 cursor-pointer">
             <tr>
-              <th class="p-2">Member ID</th>
-              <th class="p-2">Name</th>
-              <th class="p-2">Action Reason</th>
-              <th class="p-2">Action Code</th>
-              <th class="p-2">Created At</th>
-              <th class="p-2">Match?</th>
-              <th class="p-2">Notes</th>
+              <th class="p-2" onclick="sortTable('member_id')">Member ID ⬍</th>
+              <th class="p-2" onclick="sortTable('name')">Name ⬍</th>
+              <th class="p-2" onclick="sortTable('action_reason')">Action Reason ⬍</th>
+              <th class="p-2" onclick="sortTable('action_code')">Action Code ⬍</th>
+              <th class="p-2" onclick="sortTable('created_at')">Created At ⬍</th>
+              <th class="p-2" onclick="sortTable('match_result')">Match? ⬍</th>
+              <th class="p-2" onclick="sortTable('Notes')">Notes ⬍</th>
             </tr>
           </thead>
           <tbody id="data-table-body"></tbody>
@@ -106,13 +66,12 @@
   <!-- Script -->
   <script>
     let allData = [];
+    let currentSort = { column: null, asc: true };
 
     async function loadData() {
       const res = await fetch("https://raw.githubusercontent.com/AndreDowbor/dashboard-project/main/data.json");
       allData = await res.json();
       renderTable(allData);
-      updateSummary(allData);
-      renderCharts(allData);
       populateActionFilter(allData);
     }
 
@@ -120,16 +79,20 @@
       const tbody = document.querySelector("#data-table-body");
       tbody.innerHTML = "";
 
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">No results found</td></tr>`;
+        return;
+      }
+
       data.forEach(row => {
         const safeReason = row.action_reason ? encodeURIComponent(row.action_reason) : "";
         const safeNotes  = row.Notes ? encodeURIComponent(row.Notes) : "";
 
         tbody.innerHTML += `
           <tr class="border-t ${row.match_result ? '' : 'bg-red-50'}">
-            <td class="p-2">#${row.member_id}</td>
+            <td class="p-2">${row.member_id}</td>
             <td class="p-2">${row.first_name} ${row.last_name}</td>
 
-            <!-- Action Reason -->
             <td class="p-2 truncate max-w-xs ${row.action_reason ? 'cursor-pointer text-blue-600 underline' : ''}"
                 data-text="${safeReason}" onclick="handleCellClick(this)">
               ${row.action_reason ? row.action_reason.substring(0,50) + (row.action_reason.length > 50 ? "..." : "") : ""}
@@ -139,125 +102,12 @@
             <td class="p-2">${row.created_at}</td>
             <td class="p-2">${row.match_result ? "✅ Match" : "❌ No Match"}</td>
 
-            <!-- Notes -->
             <td class="p-2 truncate max-w-xs ${row.Notes ? 'cursor-pointer underline' : ''}"
                 data-text="${safeNotes}" onclick="handleCellClick(this)">
               ${row.Notes ? row.Notes.substring(0,40) + (row.Notes.length > 40 ? "..." : "") : ""}
             </td>
           </tr>
         `;
-      });
-    }
-
-    function updateSummary(data) {
-      const total = data.length;
-      const matches = data.filter(r => r.match_result).length;
-      const noMatches = total - matches;
-      const accuracy = total > 0 ? Math.round((matches / total) * 100) : 0;
-      const newTriggers = data.filter(r => r.new_trigger_needed).length;
-      const adjustTriggers = data.filter(r => r.trigger_adjust_needed).length;
-
-      document.getElementById("total-messages").innerText = total;
-      document.getElementById("matches").innerText = matches;
-      document.getElementById("no-matches").innerText = noMatches;
-      document.getElementById("accuracy").innerText = accuracy + "%";
-      document.getElementById("new-triggers").innerText = newTriggers;
-      document.getElementById("adjust-triggers").innerText = adjustTriggers;
-    }
-
-    function renderCharts(data) {
-      const matches = data.filter(r => r.match_result).length;
-      const noMatches = data.length - matches;
-
-      // Pie Chart Matches vs No Matches
-      new Chart(document.getElementById("pieChart"), {
-        type: 'pie',
-        data: {
-          labels: ["Matches", "No Matches"],
-          datasets: [{
-            data: [matches, noMatches],
-            backgroundColor: ["#34d399", "#f87171"]
-          }]
-        }
-      });
-
-      // Line Chart Accuracy over Time
-      const byDate = {};
-      data.forEach(r => {
-        const date = r.created_at.split("T")[0];
-        if (!byDate[date]) byDate[date] = { total: 0, matches: 0 };
-        byDate[date].total++;
-        if (r.match_result) byDate[date].matches++;
-      });
-      const dates = Object.keys(byDate).sort();
-      const accuracyTrend = dates.map(d => Math.round((byDate[d].matches / byDate[d].total) * 100));
-
-      new Chart(document.getElementById("lineChart"), {
-        type: 'line',
-        data: {
-          labels: dates,
-          datasets: [{
-            label: 'Accuracy %',
-            data: accuracyTrend,
-            borderColor: "#10b981",
-            fill: false
-          }]
-        },
-        options: { responsive: true }
-      });
-
-      // Bar Chart by Action Code
-      const codes = [...new Set(data.map(r => r.action_code))];
-      const matchCounts = codes.map(code => data.filter(r => r.action_code === code && r.match_result).length);
-      const noMatchCounts = codes.map(code => data.filter(r => r.action_code === code && !r.match_result).length);
-
-      new Chart(document.getElementById("barChart"), {
-        type: 'bar',
-        data: {
-          labels: codes,
-          datasets: [
-            { label: "Matches", data: matchCounts, backgroundColor: "#34d399" },
-            { label: "No Matches", data: noMatchCounts, backgroundColor: "#f87171" }
-          ]
-        },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
-      });
-
-      // Error Reasons (Notes)
-      const reasons = {};
-      data.filter(r => !r.match_result && r.Notes).forEach(r => {
-        reasons[r.Notes] = (reasons[r.Notes] || 0) + 1;
-      });
-      const reasonLabels = Object.keys(reasons);
-      const reasonCounts = Object.values(reasons);
-
-      new Chart(document.getElementById("errorChart"), {
-        type: 'bar',
-        data: {
-          labels: reasonLabels,
-          datasets: [{
-            label: 'Error Reasons (No Match)',
-            data: reasonCounts,
-            backgroundColor: "#fbbf24"
-          }]
-        },
-        options: { indexAxis: 'y', responsive: true }
-      });
-
-      // Trigger Needs Pie
-      const newTriggers = data.filter(r => r.new_trigger_needed).length;
-      const adjustTriggers = data.filter(r => r.trigger_adjust_needed).length;
-      const none = data.length - newTriggers - adjustTriggers;
-
-      new Chart(document.getElementById("triggerNeedsChart"), {
-        type: 'pie',
-        data: {
-          labels: ["New Trigger Needed", "Adjust Trigger Needed", "No Change"],
-          datasets: [{
-            data: [newTriggers, adjustTriggers, none],
-            backgroundColor: ["#facc15", "#818cf8", "#d1d5db"]
-          }]
-        }
       });
     }
 
@@ -269,6 +119,12 @@
         opt.value = code;
         opt.textContent = code;
         select.appendChild(opt);
+      });
+
+      select.addEventListener("change", () => {
+        const val = select.value;
+        const filtered = val ? allData.filter(r => r.action_code === val) : allData;
+        renderTable(filtered);
       });
     }
 
@@ -291,11 +147,48 @@
       document.getElementById("modal").classList.remove("flex");
     }
 
+    // Sorting logic
+    function sortTable(column) {
+      currentSort.asc = currentSort.column === column ? !currentSort.asc : true;
+      currentSort.column = column;
+
+      const sorted = [...allData].sort((a, b) => {
+        let valA, valB;
+
+        if (column === "name") {
+          valA = (a.first_name + " " + a.last_name).toLowerCase();
+          valB = (b.first_name + " " + b.last_name).toLowerCase();
+        } else {
+          valA = a[column];
+          valB = b[column];
+        }
+
+        if (column === "member_id") {
+          valA = parseInt(valA) || 0;
+          valB = parseInt(valB) || 0;
+        }
+
+        if (column === "created_at") {
+          valA = new Date(valA);
+          valB = new Date(valB);
+        }
+
+        if (valA < valB) return currentSort.asc ? -1 : 1;
+        if (valA > valB) return currentSort.asc ? 1 : -1;
+        return 0;
+      });
+
+      renderTable(sorted);
+    }
+
     // 🔍 Member ID search
-    document.getElementById("search-member").addEventListener("input", e => {
-      const term = e.target.value.trim();
-      const filtered = term ? allData.filter(r => r.member_id.includes(term)) : allData;
-      renderTable(filtered);
+    document.getElementById("search-member").addEventListener("keypress", e => {
+      if (e.key === "Enter") {
+        const term = e.target.value.trim();
+        const filtered = term ? allData.filter(r => r.member_id.includes(term)) : allData;
+        renderTable(filtered);
+        e.target.blur(); // removes cursor blinking after Enter
+      }
     });
 
     loadData();
