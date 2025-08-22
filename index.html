@@ -86,7 +86,7 @@
 
   <!-- Modal -->
   <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-    <div class="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full">
+    <div class="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
       <h2 class="text-lg font-bold mb-2">Details</h2>
       <p id="modal-text" class="whitespace-pre-wrap"></p>
       <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Close</button>
@@ -98,6 +98,7 @@
     async function loadData() {
       const res = await fetch("https://raw.githubusercontent.com/AndreDowbor/dashboard-project/main/data.json");
       const data = await res.json();
+      console.log("Loaded notes:", data.map(r => r.notes)); // DEBUG
       renderTable(data);
       updateSummary(data);
       renderCharts(data);
@@ -107,20 +108,39 @@
     function renderTable(data) {
       const tbody = document.querySelector("#data-table-body");
       tbody.innerHTML = "";
+
       data.forEach(row => {
+        // Escape quotes safely for onclick
+        const safeReason = row.action_reason
+          ? row.action_reason.replace(/'/g, "&#39;").replace(/"/g, "&quot;")
+          : "";
+        const safeNotes = row.notes
+          ? row.notes.replace(/'/g, "&#39;").replace(/"/g, "&quot;")
+          : "";
+
         tbody.innerHTML += `
           <tr class="border-t ${row.match_result ? '' : 'bg-red-50'}">
             <td class="p-2">#${row.member_id}</td>
             <td class="p-2">${row.first_name} ${row.last_name}</td>
-            <td class="p-2 truncate max-w-xs cursor-pointer text-blue-600 underline" onclick="openModal(\`${row.action_reason.replace(/`/g,"'")}\`)">
-              ${row.action_reason.substring(0,50)}${row.action_reason.length > 50 ? "..." : ""}
+
+            <!-- Action Reason -->
+            <td class="p-2 truncate max-w-xs ${row.action_reason ? 'cursor-pointer text-blue-600 underline' : ''}" 
+                onclick="${row.action_reason ? `openModal('${safeReason}')` : ''}">
+              ${row.action_reason 
+                ? row.action_reason.substring(0,50) + (row.action_reason.length > 50 ? "..." : "") 
+                : ""}
             </td>
+
             <td class="p-2">${row.action_code}</td>
             <td class="p-2">${row.created_at}</td>
             <td class="p-2">${row.match_result ? "✅ Match" : "❌ No Match"}</td>
-            <td class="p-2 truncate max-w-xs cursor-pointer ${row.notes ? 'text-red-600 underline' : ''}" 
-                onclick="row.notes && openModal(\`${row.notes.replace(/`/g,"'")}\`)">
-              ${row.notes ? row.notes.substring(0,40) + (row.notes.length > 40 ? "..." : "") : ""}
+
+            <!-- Notes -->
+            <td class="p-2 truncate max-w-xs ${row.notes && row.notes.trim() ? 'cursor-pointer text-red-600 underline' : ''}" 
+                onclick="${row.notes && row.notes.trim() ? `openModal('${safeNotes}')` : ''}">
+              ${row.notes && row.notes.trim() 
+                ? row.notes.substring(0,40) + (row.notes.length > 40 ? "..." : "") 
+                : ""}
             </td>
           </tr>
         `;
@@ -173,11 +193,7 @@
             backgroundColor: "#60a5fa"
           }]
         },
-        options: {
-          scales: {
-            y: { beginAtZero: true, max: 100 }
-          }
-        }
+        options: { scales: { y: { beginAtZero: true, max: 100 } } }
       });
 
       // Line Chart accuracy over time
