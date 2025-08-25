@@ -139,39 +139,53 @@
       });
 
       // Weekly Messages Chart
-      const weeklyCounts = {};
-      data.forEach(r => {
-        const date = new Date(r.created_at);
-        if (!isNaN(date)) {
-          const year = date.getFullYear();
-          // ISO Week calculation
-          const firstJan = new Date(year, 0, 1);
-          const days = Math.floor((date - firstJan) / 86400000);
-          const week = Math.ceil((days + firstJan.getDay() + 1) / 7);
-          const key = `${year}-W${String(week).padStart(2, "0")}`;
-          weeklyCounts[key] = (weeklyCounts[key] || 0) + 1;
-        }
-      });
-      const weekLabels = Object.keys(weeklyCounts).sort();
-      const weekValues = weekLabels.map(k => weeklyCounts[k]);
+const weeklyCounts = {};
+const weekLabels = {};
 
-      new Chart(document.getElementById("weeklyMessagesChart"), {
-        type: 'bar',
-        data: {
-          labels: weekLabels,
-          datasets: [{
-            label: 'Messages per Week',
-            data: weekValues,
-            backgroundColor: "#6366f1"
-          }]
-        },
-        options: {
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
+data.forEach(r => {
+  const date = new Date(r.created_at);
+  if (!isNaN(date)) {
+    const year = date.getFullYear();
+    const firstJan = new Date(year, 0, 1);
+    const days = Math.floor((date - firstJan) / 86400000);
+    const week = Math.ceil((days + firstJan.getDay() + 1) / 7);
+    const key = `${year}-W${String(week).padStart(2, "0")}`;
+
+    // Calculate start (Monday) and end (Sunday) of this week
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - date.getDay() + 1); // Monday
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6); // Sunday
+
+    // Format like "Jul 7 – Jul 13"
+    const format = d => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    weekLabels[key] = `${format(weekStart)} – ${format(weekEnd)}`;
+
+    weeklyCounts[key] = (weeklyCounts[key] || 0) + 1;
+  }
+});
+
+const keys = Object.keys(weeklyCounts).sort();
+const displayLabels = keys.map(k => weekLabels[k]);
+const weekValues = keys.map(k => weeklyCounts[k]);
+
+new Chart(document.getElementById("weeklyMessagesChart"), {
+  type: 'bar',
+  data: {
+    labels: displayLabels,
+    datasets: [{
+      label: 'Messages per Week',
+      data: weekValues,
+      backgroundColor: "#6366f1"
+    }]
+  },
+  options: {
+    scales: {
+      y: { beginAtZero: true }
     }
+  }
+});
+
 
     function populateActionFilter(data) {
       const select = document.getElementById("filter-action");
