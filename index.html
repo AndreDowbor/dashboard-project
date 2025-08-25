@@ -92,7 +92,14 @@
 
         tbody.innerHTML += `
           <tr class="border-t ${row.match_result ? '' : 'bg-red-50'}">
-            <td class="p-2">${row.member_id}</td>
+            <td class="p-2">
+  <a href="https://my.ccs.ca/CCSStaff/Account_Page_Staff.aspx?ID=${row.member_id}&WebsiteKey=4243d9e2-e91e-468c-97c2-2046d70c1e1a" 
+     target="_blank" 
+     class="text-blue-600 hover:underline">
+    ${row.member_id}
+  </a>
+</td>
+
             <td class="p-2">${row.first_name} ${row.last_name}</td>
 
             <td class="p-2 truncate max-w-xs ${row.action_reason ? 'cursor-pointer text-blue-600 underline' : ''}"
