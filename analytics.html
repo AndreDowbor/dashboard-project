@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI QA Dashboard - Analytics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-white shadow p-4 flex justify-between items-center">
+    <div class="flex items-center space-x-2">
+      <img src="datascout_logo.png" alt="DataScout Logo" class="h-8 w-8">
+      <h1 class="text-xl font-bold">AI QA Analytics</h1>
+    </div>
+    <a href="index.html" class="text-blue-600 hover:underline">← Back to QA Table</a>
+  </header>
+
+  <!-- Layout -->
+  <main class="p-6 space-y-6">
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-3 gap-4">
+      <div class="bg-white p-4 rounded-xl shadow">
+        <p class="text-sm text-gray-500">📩 Total Messages</p>
+        <p id="total" class="text-2xl font-bold">0</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <p class="text-sm text-gray-500">✅ Matches</p>
+        <p id="matches" class="text-2xl font-bold text-green-600">0</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <p class="text-sm text-gray-500">❌ No Matches</p>
+        <p id="noMatches" class="text-2xl font-bold text-red-600">0</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <p class="text-sm text-gray-500">🎯 Accuracy</p>
+        <p id="accuracy" class="text-2xl font-bold">0%</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <p class="text-sm text-gray-500">⚡ New Trigger Needed</p>
+        <p id="newTrigger" class="text-2xl font-bold text-yellow-600">0</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <p class="text-sm text-gray-500">✏️ Adjust Trigger Needed</p>
+        <p id="adjustTrigger" class="text-2xl font-bold text-purple-600">0</p>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-white p-4 rounded-xl shadow">
+        <canvas id="trendChart"></canvas>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <canvas id="actionCodeChart"></canvas>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Script -->
+  <script>
+    async function loadData() {
+      const res = await fetch("https://raw.githubusercontent.com/AndreDowbor/dashboard-project/main/data.json");
+      const data = await res.json();
+
+      // KPIs
+      const total = data.length;
+      const matches = data.filter(r => r.match_result).length;
+      const noMatches = total - matches;
+      const accuracy = total ? Math.round((matches/total) * 100) : 0;
+      const newTrigger = data.filter(r => r.new_trigger_needed).length;
+      const adjustTrigger = data.filter(r => r.trigger_adjust_needed).length;
+
+      document.getElementById("total").innerText = total;
+      document.getElementById("matches").innerText = matches;
+      document.getElementById("noMatches").innerText = noMatches;
+      document.getElementById("accuracy").innerText = accuracy + "%";
+      document.getElementById("newTrigger").innerText = newTrigger;
+      document.getElementById("adjustTrigger").innerText = adjustTrigger;
+
+      // Trend Chart
+      const byDate = {};
+      data.forEach(r => {
+        const d = r.created_at.split("T")[0];
+        if (!byDate[d]) byDate[d] = { total: 0, matches: 0 };
+        byDate[d].total++;
+        if (r.match_result) byDate[d].matches++;
+      });
+      const labels = Object.keys(byDate).sort();
+      const trendData = labels.map(d => Math.round((byDate[d].matches/byDate[d].total)*100));
+
+      new Chart(document.getElementById("trendChart"), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Accuracy %',
+            data: trendData,
+            borderColor: "#10b981",
+            fill: false
+          }]
+        }
+      });
+
+      // Action Code Chart
+      const codes = [...new Set(data.map(r => r.action_code))];
+      const matchRates = codes.map(c => {
+        const subset = data.filter(r => r.action_code === c);
+        const m = subset.filter(r => r.match_result).length;
+        return Math.round((m/subset.length)*100);
+      });
+
+      new Chart(document.getElementById("actionCodeChart"), {
+        type: 'bar',
+        data: {
+          labels: codes,
+          datasets: [{
+            label: 'Accuracy % by Action Code',
+            data: matchRates,
+            backgroundColor: "#3b82f6"
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true, max: 100 } }
+        }
+      });
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
