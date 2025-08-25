@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CCS Triggers Validation Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
@@ -13,9 +12,10 @@
   <header class="bg-white shadow p-4 flex justify-between items-center">
     <div class="flex items-center space-x-2">
       <img src="datascout_logo.png" alt="DataScout Logo" class="h-8 w-8">
-      <h1 class="text-xl font-bold">Analytics Dashboard</h1>
+      <h1 class="text-xl font-bold">CCS Triggers Validation Dashboard</h1>
     </div>
     <div class="flex space-x-2">
+      <input type="text" id="search-member" placeholder="🔍 Search Member ID" class="border rounded px-2 py-1 text-sm">
       <select class="border rounded px-2 py-1 text-sm" id="filter-action">
         <option value="">All Action Codes</option>
       </select>
@@ -28,166 +28,107 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-white p-4 border-r space-y-4">
       <ul class="space-y-2">
-        <li><a href="index.html" class="text-blue-600 hover:underline">Messages Table</a></li>
+        <li><a href="analytics.html" class="text-blue-600 hover:underline">Analytics</a></li>
       </ul>
     </aside>
 
     <!-- Main -->
     <main class="flex-1 p-6 space-y-6">
 
-      <!-- KPI Cards -->
-      <div class="grid grid-cols-3 gap-4">
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">📩 Total Messages</p>
-          <p id="total" class="text-2xl font-bold">0</p>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">✅ Matches</p>
-          <p id="matches" class="text-2xl font-bold text-green-600">0</p>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">❌ No Matches</p>
-          <p id="noMatches" class="text-2xl font-bold text-red-600">0</p>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">🎯 Accuracy</p>
-          <p id="accuracy" class="text-2xl font-bold">0%</p>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">⚡ New Trigger Needed</p>
-          <p id="newTrigger" class="text-2xl font-bold text-yellow-600">0</p>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <p class="text-sm text-gray-500">✏️ Adjust Trigger Needed</p>
-          <p id="adjustTrigger" class="text-2xl font-bold text-purple-600">0</p>
-        </div>
-      </div>
-
-      <!-- Charts -->
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-white p-4 rounded-xl shadow">
-          <canvas id="trendChart"></canvas>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <canvas id="weeklyMessagesChart"></canvas>
-        </div>
+      <!-- Table -->
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="min-w-full text-sm text-left">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('member_id', this)">
+                Member ID <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('name', this)">
+                Name <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('action_reason', this)">
+                Action Reason <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('action_code', this)">
+                Action Code <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('created_at', this)">
+                Created At <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('match_result', this)">
+                Match? <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('notes', this)">
+                Notes <span class="sort-arrow">⇅</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="data-table-body"></tbody>
+        </table>
       </div>
 
     </main>
   </div>
 
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full">
+      <h2 class="text-lg font-bold mb-2">Details</h2>
+      <p id="modal-text" class="whitespace-pre-wrap"></p>
+      <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Close</button>
+    </div>
+  </div>
+
   <!-- Script -->
   <script>
     let allData = [];
+    let currentSort = { column: null, asc: true, element: null };
 
     async function loadData() {
       const res = await fetch("https://raw.githubusercontent.com/AndreDowbor/dashboard-project/main/data.json");
       allData = await res.json();
-      updateAnalytics(allData);
+      renderTable(allData);
       populateActionFilter(allData);
     }
 
-    function updateAnalytics(data) {
-      const total = data.length;
-      const matches = data.filter(r => r.match_result).length;
-      const noMatches = total - matches;
-      const accuracy = total ? Math.round((matches/total) * 100) : 0;
+    function renderTable(data) {
+      const tbody = document.querySelector("#data-table-body");
+      tbody.innerHTML = "";
 
-      // Convert truthy strings/values into real booleans
-      const parseBool = v => {
-        if (typeof v === "boolean") return v;
-        if (typeof v === "string") return v.trim().toLowerCase() === "true";
-        return false;
-      };
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">No results found</td></tr>`;
+        return;
+      }
 
-      const newTrigger = data.filter(r => parseBool(r.new_trigger_needed)).length;
-      const adjustTrigger = data.filter(r => parseBool(r.trigger_adjust_needed)).length;
+      data.forEach(row => {
+        const safeReason = row.action_reason ? encodeURIComponent(row.action_reason) : "";
+        const safeNotes  = row.notes ? encodeURIComponent(row.notes) : "";
 
-      document.getElementById("total").innerText = total;
-      document.getElementById("matches").innerText = matches;
-      document.getElementById("noMatches").innerText = noMatches;
-      document.getElementById("accuracy").innerText = accuracy + "%";
-      document.getElementById("newTrigger").innerText = newTrigger;
-      document.getElementById("adjustTrigger").innerText = adjustTrigger;
-
-      renderCharts(data);
+        tbody.innerHTML += `
+          <tr class="border-t ${row.match_result ? '' : 'bg-red-50'}">
+            <td class="px-4 py-2">
+              <a href="https://my.ccs.ca/CCSStaff/Account_Page_Staff.aspx?ID=${row.member_id}&WebsiteKey=4243d9e2-e91e-468c-97c2-2046d70c1e1a" 
+                 target="_blank" 
+                 class="text-blue-600 hover:underline">
+                ${row.member_id}
+              </a>
+            </td>
+            <td class="px-4 py-2">${row.first_name} ${row.last_name}</td>
+            <td class="px-4 py-2 truncate max-w-xs ${row.action_reason ? 'cursor-pointer text-blue-600 underline' : ''}"
+                data-text="${safeReason}" onclick="handleCellClick(this)">
+              ${row.action_reason ? row.action_reason.substring(0,50) + (row.action_reason.length > 50 ? "..." : "") : ""}
+            </td>
+            <td class="px-4 py-2">${row.action_code}</td>
+            <td class="px-4 py-2">${row.created_at}</td>
+            <td class="px-4 py-2">${row.match_result ? "✅ Match" : "❌ No Match"}</td>
+            <td class="px-4 py-2 truncate max-w-xs ${row.notes ? 'cursor-pointer underline' : ''}"
+                data-text="${safeNotes}" onclick="handleCellClick(this)">
+              ${row.notes ? row.notes.substring(0,40) + (row.notes.length > 40 ? "..." : "") : ""}
+            </td>
+          </tr>
+        `;
+      });
     }
-
-    function renderCharts(data) {
-      // Trend Chart (Accuracy % by day)
-      const byDate = {};
-      data.forEach(r => {
-        const d = r.created_at.split("T")[0];
-        if (!byDate[d]) byDate[d] = { total: 0, matches: 0 };
-        byDate[d].total++;
-        if (r.match_result) byDate[d].matches++;
-      });
-      const labels = Object.keys(byDate).sort();
-      const trendData = labels.map(d => Math.round((byDate[d].matches/byDate[d].total)*100));
-
-      new Chart(document.getElementById("trendChart"), {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Accuracy %',
-            data: trendData,
-            borderColor: "#10b981",
-            fill: false
-          }]
-        }
-      });
-
-      // Weekly Messages Chart
-      const weeklyCounts = {};
-      const weekLabels = {};
-
-      data.forEach(r => {
-        const date = new Date(r.created_at);
-        if (!isNaN(date)) {
-          const year = date.getFullYear();
-          const firstJan = new Date(year, 0, 1);
-          const days = Math.floor((date - firstJan) / 86400000);
-          const week = Math.ceil((days + firstJan.getDay() + 1) / 7);
-          const key = `${year}-W${String(week).padStart(2, "0")}`;
-
-          // Week start (Monday) and end (Sunday)
-          const weekStart = new Date(date);
-          const day = weekStart.getDay();
-          const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1); // adjust when Sunday
-          weekStart.setDate(diff);
-          const weekEnd = new Date(weekStart);
-          weekEnd.setDate(weekStart.getDate() + 6);
-
-          // Format like "Jul 7 – Jul 13"
-          const format = d => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-          weekLabels[key] = `${format(weekStart)} – ${format(weekEnd)}`;
-
-          weeklyCounts[key] = (weeklyCounts[key] || 0) + 1;
-        }
-      });
-
-      const keys = Object.keys(weeklyCounts).sort();
-      const displayLabels = keys.map(k => weekLabels[k]);
-      const weekValues = keys.map(k => weeklyCounts[k]);
-
-      new Chart(document.getElementById("weeklyMessagesChart"), {
-        type: 'bar',
-        data: {
-          labels: displayLabels,
-          datasets: [{
-            label: 'Messages per Week',
-            data: weekValues,
-            backgroundColor: "#6366f1"
-          }]
-        },
-        options: {
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    } // ✅ properly closes renderCharts
 
     function populateActionFilter(data) {
       const select = document.getElementById("filter-action");
@@ -202,9 +143,84 @@
       select.addEventListener("change", () => {
         const val = select.value;
         const filtered = val ? allData.filter(r => r.action_code === val) : allData;
-        updateAnalytics(filtered);
+        renderTable(filtered);
       });
     }
+
+    function handleCellClick(cell) {
+      const encoded = cell.dataset.text || "";
+      if (encoded.trim()) {
+        const decoded = decodeURIComponent(encoded);
+        openModal(decoded);
+      }
+    }
+
+    function openModal(text) {
+      document.getElementById("modal-text").innerText = text;
+      document.getElementById("modal").classList.remove("hidden");
+      document.getElementById("modal").classList.add("flex");
+    }
+
+    function closeModal() {
+      document.getElementById("modal").classList.add("hidden");
+      document.getElementById("modal").classList.remove("flex");
+    }
+
+    // Sorting
+    function sortTable(column, thElement) {
+      currentSort.asc = currentSort.column === column ? !currentSort.asc : true;
+      currentSort.column = column;
+
+      // Reset all arrows
+      document.querySelectorAll(".sort-arrow").forEach(arrow => {
+        arrow.textContent = "⇅";
+        arrow.classList.remove("text-green-600", "text-red-600");
+      });
+
+      // Update active arrow
+      if (currentSort.asc) {
+        thElement.querySelector(".sort-arrow").textContent = "↑";
+        thElement.querySelector(".sort-arrow").classList.add("text-green-600");
+      } else {
+        thElement.querySelector(".sort-arrow").textContent = "↓";
+        thElement.querySelector(".sort-arrow").classList.add("text-red-600");
+      }
+
+      const sorted = [...allData].sort((a, b) => {
+        let valA, valB;
+
+        if (column === "name") {
+          valA = (a.first_name + " " + a.last_name).toLowerCase();
+          valB = (b.first_name + " " + b.last_name).toLowerCase();
+        } else {
+          valA = a[column];
+          valB = b[column];
+        }
+
+        if (column === "member_id") {
+          valA = parseInt(valA) || 0;
+          valB = parseInt(valB) || 0;
+        }
+
+        if (column === "created_at") {
+          valA = new Date(valA);
+          valB = new Date(valB);
+        }
+
+        if (valA < valB) return currentSort.asc ? -1 : 1;
+        if (valA > valB) return currentSort.asc ? 1 : -1;
+        return 0;
+      });
+
+      renderTable(sorted);
+    }
+
+    // 🔍 Live Member ID search
+    document.getElementById("search-member").addEventListener("input", e => {
+      const term = e.target.value.trim();
+      const filtered = term ? allData.filter(r => r.member_id.includes(term)) : allData;
+      renderTable(filtered);
+    });
 
     loadData();
   </script>
