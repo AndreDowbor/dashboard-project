@@ -37,34 +37,22 @@
 
       <!-- Table -->
       <div class="bg-white rounded-xl shadow overflow-hidden">
-        <table class="min-w-full text-sm text-left">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('member_id', this)">
-                Member ID <span class="sort-arrow">⇅</span>
-              </th>
-              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('name', this)">
-                Name <span class="sort-arrow">⇅</span>
-              </th>
-              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('action_reason', this)">
-                Action Reason <span class="sort-arrow">⇅</span>
-              </th>
-              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('action_code', this)">
-                Action Code <span class="sort-arrow">⇅</span>
-              </th>
-              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('created_at', this)">
-                Created At <span class="sort-arrow">⇅</span>
-              </th>
-              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('match_result', this)">
-                Match? <span class="sort-arrow">⇅</span>
-              </th>
-              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('notes', this)">
-                Notes <span class="sort-arrow">⇅</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody id="data-table-body"></tbody>
-        </table>
+        <div class="overflow-y-auto max-h-[70vh]">
+          <table class="min-w-full text-sm text-left">
+            <thead class="bg-gray-100 sticky top-0 z-10">
+              <tr>
+                <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('member_id')">Member ID</th>
+                <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('name')">Name</th>
+                <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('action_reason')">Action Reason</th>
+                <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('action_code')">Action Code</th>
+                <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('created_at')">Created At</th>
+                <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('match_result')">Match?</th>
+                <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('notes')">Notes</th>
+              </tr>
+            </thead>
+            <tbody id="data-table-body"></tbody>
+          </table>
+        </div>
       </div>
 
     </main>
@@ -82,7 +70,7 @@
   <!-- Script -->
   <script>
     let allData = [];
-    let currentSort = { column: null, asc: true, element: null };
+    let currentSort = { column: null, asc: true };
 
     async function loadData() {
       const res = await fetch("https://raw.githubusercontent.com/AndreDowbor/dashboard-project/main/data.json");
@@ -167,24 +155,9 @@
     }
 
     // Sorting
-    function sortTable(column, thElement) {
+    function sortTable(column) {
       currentSort.asc = currentSort.column === column ? !currentSort.asc : true;
       currentSort.column = column;
-
-      // Reset all arrows
-      document.querySelectorAll(".sort-arrow").forEach(arrow => {
-        arrow.textContent = "⇅";
-        arrow.classList.remove("text-green-600", "text-red-600");
-      });
-
-      // Update active arrow
-      if (currentSort.asc) {
-        thElement.querySelector(".sort-arrow").textContent = "↑";
-        thElement.querySelector(".sort-arrow").classList.add("text-green-600");
-      } else {
-        thElement.querySelector(".sort-arrow").textContent = "↓";
-        thElement.querySelector(".sort-arrow").classList.add("text-red-600");
-      }
 
       const sorted = [...allData].sort((a, b) => {
         let valA, valB;
