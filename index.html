@@ -38,15 +38,29 @@
       <!-- Table -->
       <div class="bg-white rounded-xl shadow overflow-hidden">
         <table class="min-w-full text-sm text-left">
-          <thead class="bg-gray-100 cursor-pointer">
+          <thead class="bg-gray-100">
             <tr>
-              <th class="p-2" onclick="sortTable('member_id')">Member ID ⬍</th>
-              <th class="p-2" onclick="sortTable('name')">Name ⬍</th>
-              <th class="p-2" onclick="sortTable('action_reason')">Action Reason ⬍</th>
-              <th class="p-2" onclick="sortTable('action_code')">Action Code ⬍</th>
-              <th class="p-2" onclick="sortTable('created_at')">Created At ⬍</th>
-              <th class="p-2" onclick="sortTable('match_result')">Match? ⬍</th>
-              <th class="p-2" onclick="sortTable('notes')">Notes ⬍</th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('member_id', this)">
+                Member ID <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('name', this)">
+                Name <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('action_reason', this)">
+                Action Reason <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('action_code', this)">
+                Action Code <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('created_at', this)">
+                Created At <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('match_result', this)">
+                Match? <span class="sort-arrow">⇅</span>
+              </th>
+              <th class="px-4 py-2 text-left font-semibold cursor-pointer" onclick="sortTable('notes', this)">
+                Notes <span class="sort-arrow">⇅</span>
+              </th>
             </tr>
           </thead>
           <tbody id="data-table-body"></tbody>
@@ -68,7 +82,7 @@
   <!-- Script -->
   <script>
     let allData = [];
-    let currentSort = { column: null, asc: true };
+    let currentSort = { column: null, asc: true, element: null };
 
     async function loadData() {
       const res = await fetch("https://raw.githubusercontent.com/AndreDowbor/dashboard-project/main/data.json");
@@ -92,26 +106,22 @@
 
         tbody.innerHTML += `
           <tr class="border-t ${row.match_result ? '' : 'bg-red-50'}">
-            <td class="p-2">
+            <td class="px-4 py-2">
               <a href="https://my.ccs.ca/CCSStaff/Account_Page_Staff.aspx?ID=${row.member_id}&WebsiteKey=4243d9e2-e91e-468c-97c2-2046d70c1e1a" 
                  target="_blank" 
                  class="text-blue-600 hover:underline">
                 ${row.member_id}
               </a>
             </td>
-
-            <td class="p-2">${row.first_name} ${row.last_name}</td>
-
-            <td class="p-2 truncate max-w-xs ${row.action_reason ? 'cursor-pointer text-blue-600 underline' : ''}"
+            <td class="px-4 py-2">${row.first_name} ${row.last_name}</td>
+            <td class="px-4 py-2 truncate max-w-xs ${row.action_reason ? 'cursor-pointer text-blue-600 underline' : ''}"
                 data-text="${safeReason}" onclick="handleCellClick(this)">
               ${row.action_reason ? row.action_reason.substring(0,50) + (row.action_reason.length > 50 ? "..." : "") : ""}
             </td>
-
-            <td class="p-2">${row.action_code}</td>
-            <td class="p-2">${row.created_at}</td>
-            <td class="p-2">${row.match_result ? "✅ Match" : "❌ No Match"}</td>
-
-            <td class="p-2 truncate max-w-xs ${row.notes ? 'cursor-pointer underline' : ''}"
+            <td class="px-4 py-2">${row.action_code}</td>
+            <td class="px-4 py-2">${row.created_at}</td>
+            <td class="px-4 py-2">${row.match_result ? "✅ Match" : "❌ No Match"}</td>
+            <td class="px-4 py-2 truncate max-w-xs ${row.notes ? 'cursor-pointer underline' : ''}"
                 data-text="${safeNotes}" onclick="handleCellClick(this)">
               ${row.notes ? row.notes.substring(0,40) + (row.notes.length > 40 ? "..." : "") : ""}
             </td>
@@ -157,9 +167,24 @@
     }
 
     // Sorting
-    function sortTable(column) {
+    function sortTable(column, thElement) {
       currentSort.asc = currentSort.column === column ? !currentSort.asc : true;
       currentSort.column = column;
+
+      // Reset all arrows
+      document.querySelectorAll(".sort-arrow").forEach(arrow => {
+        arrow.textContent = "⇅";
+        arrow.classList.remove("text-green-600", "text-red-600");
+      });
+
+      // Update active arrow
+      if (currentSort.asc) {
+        thElement.querySelector(".sort-arrow").textContent = "↑";
+        thElement.querySelector(".sort-arrow").classList.add("text-green-600");
+      } else {
+        thElement.querySelector(".sort-arrow").textContent = "↓";
+        thElement.querySelector(".sort-arrow").classList.add("text-red-600");
+      }
 
       const sorted = [...allData].sort((a, b) => {
         let valA, valB;
