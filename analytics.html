@@ -64,17 +64,15 @@
       </div>
 
       <!-- Charts -->
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-white p-4 rounded-xl shadow">
-          <canvas id="trendChart"></canvas>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow">
-          <canvas id="actionCodeChart"></canvas>
-        </div>
-      </div>
-
-    </main>
+<div class="grid grid-cols-2 gap-4">
+  <div class="bg-white p-4 rounded-xl shadow">
+    <canvas id="trendChart"></canvas>
   </div>
+  <div class="bg-white p-4 rounded-xl shadow">
+    <canvas id="weeklyMessagesChart"></canvas>
+  </div>
+</div>
+
 
   <!-- Script -->
   <script>
@@ -145,29 +143,38 @@
         }
       });
 
-      // Action Code Chart
-      const codes = [...new Set(data.map(r => r.action_code))];
-      const matchRates = codes.map(c => {
-        const subset = data.filter(r => r.action_code === c);
-        const m = subset.filter(r => r.match_result).length;
-        return Math.round((m/subset.length)*100);
-      });
+      // Weekly Messages Chart
+const weeklyCounts = {};
+data.forEach(r => {
+  const date = new Date(r.created_at);
+  if (!isNaN(date)) {
+    // Get ISO week string
+    const year = date.getFullYear();
+    const week = Math.ceil((((date - new Date(year,0,1)) / 86400000) + new Date(year,0,1).getDay()+1)/7);
+    const key = `${year}-W${String(week).padStart(2,"0")}`;
+    weeklyCounts[key] = (weeklyCounts[key] || 0) + 1;
+  }
+});
+const weekLabels = Object.keys(weeklyCounts).sort();
+const weekValues = weekLabels.map(k => weeklyCounts[k]);
 
-      new Chart(document.getElementById("actionCodeChart"), {
-        type: 'bar',
-        data: {
-          labels: codes,
-          datasets: [{
-            label: 'Accuracy % by Action Code',
-            data: matchRates,
-            backgroundColor: "#3b82f6"
-          }]
-        },
-        options: {
-          scales: { y: { beginAtZero: true, max: 100 } }
-        }
-      });
+new Chart(document.getElementById("weeklyMessagesChart"), {
+  type: 'bar',
+  data: {
+    labels: weekLabels,
+    datasets: [{
+      label: 'Messages per Week',
+      data: weekValues,
+      backgroundColor: "#6366f1"
+    }]
+  },
+  options: {
+    scales: {
+      y: { beginAtZero: true }
     }
+  }
+});
+
 
     function populateActionFilter(data) {
       const select = document.getElementById("filter-action");
