@@ -88,22 +88,30 @@
     }
 
     function updateAnalytics(data) {
-      const total = data.length;
-      const matches = data.filter(r => r.match_result).length;
-      const noMatches = total - matches;
-      const accuracy = total ? Math.round((matches/total) * 100) : 0;
-      const newTrigger = data.filter(r => r.new_trigger_needed).length;
-      const adjustTrigger = data.filter(r => r.trigger_adjust_needed).length;
+  const total = data.length;
+  const matches = data.filter(r => r.match_result).length;
+  const noMatches = total - matches;
+  const accuracy = total ? Math.round((matches/total) * 100) : 0;
 
-      document.getElementById("total").innerText = total;
-      document.getElementById("matches").innerText = matches;
-      document.getElementById("noMatches").innerText = noMatches;
-      document.getElementById("accuracy").innerText = accuracy + "%";
-      document.getElementById("newTrigger").innerText = newTrigger;
-      document.getElementById("adjustTrigger").innerText = adjustTrigger;
+  // Normalize boolean fields (handles naming differences)
+  const newTrigger = data.filter(r =>
+    r.new_trigger_needed === true || r["New Trigger Needed"] === true
+  ).length;
 
-      renderCharts(data);
-    }
+  const adjustTrigger = data.filter(r =>
+    r.trigger_adjust_needed === true || r["Trigger Adjust Needed"] === true
+  ).length;
+
+  document.getElementById("total").innerText = total;
+  document.getElementById("matches").innerText = matches;
+  document.getElementById("noMatches").innerText = noMatches;
+  document.getElementById("accuracy").innerText = accuracy + "%";
+  document.getElementById("newTrigger").innerText = newTrigger;
+  document.getElementById("adjustTrigger").innerText = adjustTrigger;
+
+  renderCharts(data);
+}
+
 
     function renderCharts(data) {
       // Trend Chart
