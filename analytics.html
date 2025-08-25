@@ -64,15 +64,17 @@
       </div>
 
       <!-- Charts -->
-<div class="grid grid-cols-2 gap-4">
-  <div class="bg-white p-4 rounded-xl shadow">
-    <canvas id="trendChart"></canvas>
-  </div>
-  <div class="bg-white p-4 rounded-xl shadow">
-    <canvas id="weeklyMessagesChart"></canvas>
-  </div>
-</div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-white p-4 rounded-xl shadow">
+          <canvas id="trendChart"></canvas>
+        </div>
+        <div class="bg-white p-4 rounded-xl shadow">
+          <canvas id="weeklyMessagesChart"></canvas>
+        </div>
+      </div>
 
+    </main>
+  </div>
 
   <!-- Script -->
   <script>
@@ -86,40 +88,33 @@
     }
 
     function updateAnalytics(data) {
-  const total = data.length;
-  const matches = data.filter(r => r.match_result).length;
-  const noMatches = total - matches;
-  const accuracy = total ? Math.round((matches/total) * 100) : 0;
+      const total = data.length;
+      const matches = data.filter(r => r.match_result).length;
+      const noMatches = total - matches;
+      const accuracy = total ? Math.round((matches/total) * 100) : 0;
 
-  // Convert truthy strings/values into real booleans
-  const parseBool = v => {
-    if (typeof v === "boolean") return v;
-    if (typeof v === "string") return v.trim().toLowerCase() === "true";
-    return false;
-  };
+      // Convert truthy strings/values into real booleans
+      const parseBool = v => {
+        if (typeof v === "boolean") return v;
+        if (typeof v === "string") return v.trim().toLowerCase() === "true";
+        return false;
+      };
 
-  const newTrigger = data.filter(r =>
-    parseBool(r.new_trigger_needed) || parseBool(r["New Trigger Needed"])
-  ).length;
+      const newTrigger = data.filter(r => parseBool(r.new_trigger_needed)).length;
+      const adjustTrigger = data.filter(r => parseBool(r.trigger_adjust_needed)).length;
 
-  const adjustTrigger = data.filter(r =>
-    parseBool(r.trigger_adjust_needed) || parseBool(r["Trigger Adjust Needed"])
-  ).length;
+      document.getElementById("total").innerText = total;
+      document.getElementById("matches").innerText = matches;
+      document.getElementById("noMatches").innerText = noMatches;
+      document.getElementById("accuracy").innerText = accuracy + "%";
+      document.getElementById("newTrigger").innerText = newTrigger;
+      document.getElementById("adjustTrigger").innerText = adjustTrigger;
 
-  document.getElementById("total").innerText = total;
-  document.getElementById("matches").innerText = matches;
-  document.getElementById("noMatches").innerText = noMatches;
-  document.getElementById("accuracy").innerText = accuracy + "%";
-  document.getElementById("newTrigger").innerText = newTrigger;
-  document.getElementById("adjustTrigger").innerText = adjustTrigger;
-
-  renderCharts(data);
-}
-
-
+      renderCharts(data);
+    }
 
     function renderCharts(data) {
-      // Trend Chart
+      // Trend Chart (Accuracy % by day)
       const byDate = {};
       data.forEach(r => {
         const d = r.created_at.split("T")[0];
@@ -144,37 +139,39 @@
       });
 
       // Weekly Messages Chart
-const weeklyCounts = {};
-data.forEach(r => {
-  const date = new Date(r.created_at);
-  if (!isNaN(date)) {
-    // Get ISO week string
-    const year = date.getFullYear();
-    const week = Math.ceil((((date - new Date(year,0,1)) / 86400000) + new Date(year,0,1).getDay()+1)/7);
-    const key = `${year}-W${String(week).padStart(2,"0")}`;
-    weeklyCounts[key] = (weeklyCounts[key] || 0) + 1;
-  }
-});
-const weekLabels = Object.keys(weeklyCounts).sort();
-const weekValues = weekLabels.map(k => weeklyCounts[k]);
+      const weeklyCounts = {};
+      data.forEach(r => {
+        const date = new Date(r.created_at);
+        if (!isNaN(date)) {
+          const year = date.getFullYear();
+          // ISO Week calculation
+          const firstJan = new Date(year, 0, 1);
+          const days = Math.floor((date - firstJan) / 86400000);
+          const week = Math.ceil((days + firstJan.getDay() + 1) / 7);
+          const key = `${year}-W${String(week).padStart(2, "0")}`;
+          weeklyCounts[key] = (weeklyCounts[key] || 0) + 1;
+        }
+      });
+      const weekLabels = Object.keys(weeklyCounts).sort();
+      const weekValues = weekLabels.map(k => weeklyCounts[k]);
 
-new Chart(document.getElementById("weeklyMessagesChart"), {
-  type: 'bar',
-  data: {
-    labels: weekLabels,
-    datasets: [{
-      label: 'Messages per Week',
-      data: weekValues,
-      backgroundColor: "#6366f1"
-    }]
-  },
-  options: {
-    scales: {
-      y: { beginAtZero: true }
+      new Chart(document.getElementById("weeklyMessagesChart"), {
+        type: 'bar',
+        data: {
+          labels: weekLabels,
+          datasets: [{
+            label: 'Messages per Week',
+            data: weekValues,
+            backgroundColor: "#6366f1"
+          }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
     }
-  }
-});
-
 
     function populateActionFilter(data) {
       const select = document.getElementById("filter-action");
