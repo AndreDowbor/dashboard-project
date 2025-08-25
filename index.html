@@ -46,7 +46,7 @@
               <th class="p-2" onclick="sortTable('action_code')">Action Code ⬍</th>
               <th class="p-2" onclick="sortTable('created_at')">Created At ⬍</th>
               <th class="p-2" onclick="sortTable('match_result')">Match? ⬍</th>
-              <th class="p-2" onclick="sortTable('Notes')">Notes ⬍</th>
+              <th class="p-2" onclick="sortTable('notes')">Notes ⬍</th>
             </tr>
           </thead>
           <tbody id="data-table-body"></tbody>
@@ -88,17 +88,17 @@
 
       data.forEach(row => {
         const safeReason = row.action_reason ? encodeURIComponent(row.action_reason) : "";
-        const safeNotes  = row.Notes ? encodeURIComponent(row.Notes) : "";
+        const safeNotes  = row.notes ? encodeURIComponent(row.notes) : "";
 
         tbody.innerHTML += `
           <tr class="border-t ${row.match_result ? '' : 'bg-red-50'}">
             <td class="p-2">
-  <a href="https://my.ccs.ca/CCSStaff/Account_Page_Staff.aspx?ID=${row.member_id}&WebsiteKey=4243d9e2-e91e-468c-97c2-2046d70c1e1a" 
-     target="_blank" 
-     class="text-blue-600 hover:underline">
-    ${row.member_id}
-  </a>
-</td>
+              <a href="https://my.ccs.ca/CCSStaff/Account_Page_Staff.aspx?ID=${row.member_id}&WebsiteKey=4243d9e2-e91e-468c-97c2-2046d70c1e1a" 
+                 target="_blank" 
+                 class="text-blue-600 hover:underline">
+                ${row.member_id}
+              </a>
+            </td>
 
             <td class="p-2">${row.first_name} ${row.last_name}</td>
 
@@ -111,9 +111,9 @@
             <td class="p-2">${row.created_at}</td>
             <td class="p-2">${row.match_result ? "✅ Match" : "❌ No Match"}</td>
 
-            <td class="p-2 truncate max-w-xs ${row.Notes ? 'cursor-pointer underline' : ''}"
+            <td class="p-2 truncate max-w-xs ${row.notes ? 'cursor-pointer underline' : ''}"
                 data-text="${safeNotes}" onclick="handleCellClick(this)">
-              ${row.Notes ? row.Notes.substring(0,40) + (row.Notes.length > 40 ? "..." : "") : ""}
+              ${row.notes ? row.notes.substring(0,40) + (row.notes.length > 40 ? "..." : "") : ""}
             </td>
           </tr>
         `;
