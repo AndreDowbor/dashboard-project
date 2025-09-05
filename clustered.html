@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clustered No Matches</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-30">
+    <h1 class="text-2xl font-bold">Clustered No Matches</h1>
+    <div class="flex space-x-2">
+      <!-- Date filter -->
+      <input type="date" id="start-date" class="border rounded px-2 py-1 text-sm">
+      <input type="date" id="end-date" class="border rounded px-2 py-1 text-sm">
+
+      <!-- ID search -->
+      <input type="text" id="search-member" placeholder="🔍 Search Member ID"
+             class="border rounded px-3 py-1 text-sm focus:ring focus:ring-blue-200">
+
+      <!-- Log Type filter -->
+      <select id="filter-log-type" class="border rounded px-2 py-1 text-sm">
+        <option value="">All Log Types</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="p-6 space-y-6">
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+      <div class="overflow-y-auto max-h-[80vh]">
+        <table class="min-w-full text-sm text-left border-collapse">
+          <thead class="bg-gray-200 sticky top-0 z-20 shadow-sm">
+            <tr>
+              <th class="px-6 py-3 font-semibold text-gray-700">Member ID</th>
+              <th class="px-6 py-3 font-semibold text-gray-700">Change Date</th>
+              <th class="px-6 py-3 font-semibold text-gray-700">Full Note Explanation</th>
+              <th class="px-6 py-3 font-semibold text-gray-700">Event</th>
+              <th class="px-6 py-3 font-semibold text-gray-700">Log Type</th>
+            </tr>
+          </thead>
+          <tbody id="data-table-body" class="divide-y divide-gray-100"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-xl shadow-lg max-w-3xl w-full">
+      <h2 class="text-lg font-bold mb-2">Full Note Explanation</h2>
+      <textarea id="modal-text" class="w-full h-64 border rounded p-2 text-sm"></textarea>
+      <div class="mt-4 flex justify-end space-x-2">
+        <button onclick="closeModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition">Cancel</button>
+        <button onclick="saveModalEdit()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script>
+    let allData = [];
+    let currentData = [];
+    let editingCell = null;
+
+    async function loadData() {
+      try {
+        const res = await fetch("clustered_no_matches.json");
+        allData = await res.json();
+
+        // 🔥 Sort by date descending using only YYYY-MM-DD part
+        allData.sort((a, b) => {
+          const da = a.change_date ? a.change_date.substring(0, 10) : "0000-00-00";
+          const db = b.change_date ? b.change_date.substring(0, 10) : "0000-00-00";
+          return new Date(db) - new Date(da);
+        });
+
+        populateLogTypeFilter(allData);
+        renderTable(allData);
+      } catch (err) {
+        console.error("❌ Failed to load clustered data:", err);
+      }
+    }
+
+    function renderTable(data) {
+      currentData = data;
+      const tbody = document.querySelector("#data-table-body");
+      tbody.innerHTML = "";
+
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">No results found</td></tr>`;
+        return;
+      }
+
+      data.forEach((row, i) => {
+        const safeNotes = row.notes ? encodeURIComponent(row.notes) : "";
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-blue-50 transition">
+            <td class="px-6 py-3">
+              <a href="https://my.ccs.ca/CCSStaff/Account_Page_Staff.aspx?ID=${row.member_id}&WebsiteKey=4243d9e2-e91e-468c-97c2-2046d70c1e1a" 
+                 target="_blank" class="text-blue-600 hover:underline">
+                ${row.member_id || ""}
+              </a>
+            </td>
+            <td class="px-6 py-3 editable" data-field="change_date" data-index="${i}">
+              ${row.change_date || ""}
+            </td>
+            <td class="px-6 py-3 truncate max-w-md editable cursor-pointer text-blue-600 underline"
+                data-field="notes" data-index="${i}"
+                data-text="${safeNotes}" onclick="openModalForRow(${i})">
+              ${row.notes ? row.notes.substring(0, 80) + (row.notes.length > 80 ? "..." : "") : ""}
+            </td>
+            <td class="px-6 py-3 editable" data-field="event" data-index="${i}">
+              ${row.event || ""}
+            </td>
+            <td class="px-6 py-3 editable" data-field="log_type" data-index="${i}">
+              ${row.log_type || ""}
+            </td>
+          </tr>
+        `;
+      });
+
+      attachEditing();
+    }
+
+    function populateLogTypeFilter(data) {
+      const select = document.getElementById("filter-log-type");
+      const types = [...new Set(data.map(r => r.log_type).filter(Boolean))].sort();
+      select.innerHTML = `<option value="">All Log Types</option>`;
+      types.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
+        select.appendChild(opt);
+      });
+    }
+
+    function attachEditing() {
+      document.querySelectorAll(".editable").forEach(cell => {
+        if (cell.dataset.field === "notes") return;
+
+        cell.addEventListener("dblclick", () => {
+          const field = cell.dataset.field;
+          const index = cell.dataset.index;
+          const oldValue = cell.innerText.trim();
+
+          const input = document.createElement("input");
+          input.type = field === "change_date" ? "date" : "text";
+          input.value = oldValue;
+          input.className = "border px-2 py-1 w-full text-sm";
+
+          input.addEventListener("blur", () => {
+            const newValue = input.value;
+            cell.innerText = newValue;
+            currentData[index][field] = newValue;
+            saveRecord(currentData[index]);
+          });
+
+          cell.innerHTML = "";
+          cell.appendChild(input);
+          input.focus();
+        });
+      });
+    }
+
+    async function saveRecord(row) {
+      await fetch("http://127.0.0.1:5000/clustered/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(row),
+      });
+    }
+
+    function openModalForRow(index) {
+      editingCell = index;
+      document.getElementById("modal-text").value = currentData[index].notes || "";
+      document.getElementById("modal").classList.remove("hidden");
+      document.getElementById("modal").classList.add("flex");
+    }
+
+    function closeModal() {
+      document.getElementById("modal").classList.add("hidden");
+      document.getElementById("modal").classList.remove("flex");
+      editingCell = null;
+    }
+
+    function saveModalEdit() {
+      const newText = document.getElementById("modal-text").value;
+      if (editingCell !== null) {
+        currentData[editingCell].notes = newText;
+        saveRecord(currentData[editingCell]);
+        renderTable(currentData);
+      }
+      closeModal();
+    }
+
+    function applyFilters() {
+      const start = document.getElementById("start-date").value;
+      const end = document.getElementById("end-date").value;
+      const term = document.getElementById("search-member").value.trim();
+      const logType = document.getElementById("filter-log-type").value;
+
+      let filtered = allData;
+
+      if (start) {
+        filtered = filtered.filter(r => new Date(r.change_date.substring(0, 10)) >= new Date(start));
+      }
+      if (end) {
+        filtered = filtered.filter(r => new Date(r.change_date.substring(0, 10)) <= new Date(end));
+      }
+      if (term) {
+        filtered = filtered.filter(r => r.member_id.includes(term));
+      }
+      if (logType) {
+        filtered = filtered.filter(r => r.log_type === logType);
+      }
+
+      renderTable(filtered);
+    }
+
+    document.getElementById("start-date").addEventListener("change", applyFilters);
+    document.getElementById("end-date").addEventListener("change", applyFilters);
+    document.getElementById("search-member").addEventListener("input", applyFilters);
+    document.getElementById("filter-log-type").addEventListener("change", applyFilters);
+
+    loadData();
+  </script>
+</body>
+</html>
